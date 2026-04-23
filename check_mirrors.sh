@@ -44,14 +44,14 @@ declare -A PACKAGE_PATHS=(
 
 function check_url() {
   local url=$1
-  status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 "$url")
+  status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 "$url" || true)
   echo "$status"
 }
 
 function check_docker_registry() {
   local url=$1
   # Docker Registry requires a GET to /v2/ and must respond with 200 or 401
-  status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 "$url/v2/")
+  status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 "$url/v2/" || true)
   if [[ "$status" == "200" || "$status" == "401" ]]; then
     echo "✅ Docker Registry OK ($status)"
   else
@@ -59,16 +59,16 @@ function check_docker_registry() {
   fi
 }
 
-for idx in $(seq 0 $(yq e '.mirrors | length - 1' "$MIRROR_FILE")); do
-  name=$(yq e ".mirrors[$idx].name" "$MIRROR_FILE")
-  base_url=$(yq e ".mirrors[$idx].url" "$MIRROR_FILE")
+for idx in $(seq 0 $(yq -er '.mirrors | length - 1' "$MIRROR_FILE")); do
+  name=$(yq -er ".mirrors[$idx].name" "$MIRROR_FILE")
+  base_url=$(yq -er ".mirrors[$idx].url" "$MIRROR_FILE")
   echo -e "\n🔍 Checking mirror: $name"
   echo "URL: $base_url"
 
-  package_count=$(yq e ".mirrors[$idx].packages | length" "$MIRROR_FILE")
+  package_count=$(yq -er ".mirrors[$idx].packages | length" "$MIRROR_FILE")
 
   for j in $(seq 0 $((package_count - 1))); do
-    package=$(yq e ".mirrors[$idx].packages[$j]" "$MIRROR_FILE")
+    package=$(yq -er ".mirrors[$idx].packages[$j]" "$MIRROR_FILE")
     
     # Safely get path with set -u enabled
     if [[ -v PACKAGE_PATHS["$package"] ]]; then
