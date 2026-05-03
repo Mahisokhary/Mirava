@@ -1,0 +1,11 @@
+Ubuntu: ubuntu
+Debian: debian
+Arch Linux: archlinux
+PyPI: pypi
+npm: npm
+CentOS: centos
+Alpine: apline
+Composer: packages.json
+Docker Registry: v2/
+Homebrew: brew
+

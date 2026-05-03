@@ -3,6 +3,8 @@ set -euo pipefail
 
 MIRROR_FILE="./mirrors_list.yaml"
 MIRROR_URL="https://raw.githubusercontent.com/MiravaOrg/Mirava/refs/heads/main/mirrors_list.yaml"
+PACKAGE_PATHS_FILE="./package_path.yaml"
+PACKAGE_PATHS_URL="https://raw.githubusercontent.com/MiravaOrg/Mirava/refs/heads/main/package_path.yaml"
 
 function check_dependency() {
 	if ! command -v $1 &> /dev/null; then
@@ -34,23 +36,22 @@ function check_resource() {
 	fi
 }
 
+function load_array_from_yaml() {
+	declare -gA $1
+	for key_index in $(seq 0 $(yq -er "keys | length - 1" "$2")); do
+		local key=$(yq -er "keys[${key_index}]" "$2")
+		local value=$(yq -er ".[\"${key}\"]" "$2")
+		declare -g $1["${key}"]="$value"
+	done
+}
+
 check_dependency curl
 check_dependency yq Please install yq from: https://github.com/mikefarah/yq/
 check_dependency seq
 check_resource "$MIRROR_FILE" "$MIRROR_URL"
+check_resource "$PACKAGE_PATHS_FILE" "$PACKAGE_PATHS_URL"
 
-declare -A PACKAGE_PATHS=(
-  ["Ubuntu"]="ubuntu"
-  ["Debian"]="debian"
-  ["Arch Linux"]="archlinux"
-  ["PyPI"]="pypi"
-  ["npm"]="npm"
-  ["CentOS"]="centos"
-  ["Alpine"]="alpine"
-  ["Composer"]="packages.json"
-  ["Docker Registry"]="v2/"
-  ["Homebrew"]="brew"
-)
+load_array_from_yaml PACKAGE_PATHS "$PACKAGE_PATHS_FILE"
 
 function check_url() {
   local url=$1
