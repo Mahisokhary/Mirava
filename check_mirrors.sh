@@ -36,6 +36,7 @@ function check_resource() {
 
 check_dependency curl
 check_dependency yq Please install yq from: https://github.com/mikefarah/yq/
+check_dependency seq
 check_resource "$MIRROR_FILE" "$MIRROR_URL"
 
 declare -A PACKAGE_PATHS=(
